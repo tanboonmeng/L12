@@ -50,7 +50,7 @@ app.get('/add', (req, res) => {
 
 // Define route for processing Add Expense Entry form submission, triggered when the user clicks the "Save Expense" button on the Add Expense form. 
 app.post('/add', (req, res) => {
-    const newExpense = {
+    const newInvestment = {
         id: nextId++, // assign unique ID and increments it up by 1
         tradeType: req.body.tradeType,
         platform: req.body.platform,
@@ -61,27 +61,27 @@ app.post('/add', (req, res) => {
         date: req.body.date
     };
     
-    portfolio.push(newExpense);
+    portfolio.push(newInvestment);
     res.redirect('/');
 });
 
 
 
-// 2. READ - Display all expense entries and budget summary on the dashboard
+// 2. READ - Display all investment entries and budget summary on the dashboard
 
 // Define route for Dashboard (index.ejs), triggered when the user is at the homepage (/)
 app.get('/', (req, res) => {
-    let totalSpent = 0;
+    let totalInvested = 0;
     
     for (let i = 0; i < portfolio.length; i++) {
-        totalSpent += portfolio[i].totalCost;
+        totalInvested += portfolio[i].totalCost;
     }
     
-    const remaining = startingBudget - totalSpent;
+    const remaining = startingBudget - totalInvested;
     
     res.render('index', {       
-        expenses: portfolio,
-        totalSpent: totalSpent,
+        portfolio: portfolio,
+        totalInvested: totalInvested,
         remaining: remaining
     });
 });
@@ -89,35 +89,38 @@ app.get('/', (req, res) => {
 
 
 
-// 3. UPDATE - Edit existing expense entry
+// 3. UPDATE - Edit existing investment entry
 
-// Define route to show edit form for a specific expense entry, triggered by the edit button.
+// Define route to show edit form for a specific investment entry, triggered by the edit button.
 app.get('/edit/:id', (req, res) => {
     const id = parseInt(req.params.id); 
-    let foundExpense = null;
+    let foundInvestment = null;
     
     // Search loop to search the item containing the permanent ID key
     for (let i = 0; i < portfolio.length; i++) {
         if (portfolio[i].id === id) {
-            foundExpense = portfolio[i];
+            foundInvestment = portfolio[i];
             break; // Match located, exit search loop safely
         }
     }
     
-    res.render('edit', { expense: foundExpense, id: id });
+    res.render('edit', { investment: foundInvestment, id: id });
 });
 
-// Define route to process the edit form submission and update the specific expense entry
+// Define route to process the edit form submission and update the specific investment entry
 app.post('/edit/:id', (req, res) => {
     const id = parseInt(req.params.id);
     
-    // Loop to find the specific expense entry in the expenses list that matches the provided ID, then update its properties with the new values submitted through the edit form
+    // Loop to find the specific investment entry in the portfolio list that matches the provided ID, then update its properties with the new values submitted through the edit form
     for (let i = 0; i < portfolio.length; i++) {
         if (portfolio[i].id === id) {
-            portfolio[i].description = req.body.description;
-            portfolio[i].amount = parseFloat(req.body.amount);
+            portfolio[i].tradeType = req.body.tradeType;
+            portfolio[i].platform = req.body.platform;
+            portfolio[i].quantity = parseInt(req.body.quantity);
+            portfolio[i].unitPrice = parseFloat(req.body.unitPrice);
+            portfolio[i].commission = parseFloat(req.body.commission);
+            portfolio[i].totalCost = parseFloat(req.body.totalCost);
             portfolio[i].date = req.body.date;
-            portfolio[i].category = req.body.category;
             break;
         }
     }
@@ -128,9 +131,9 @@ app.post('/edit/:id', (req, res) => {
 
 
 
-// 4. DELETE - Remove an existing expense entry
+// 4. DELETE - Remove an existing investment entry
 
-// Define route to handle deletion of a specific expense entry, triggered by the delete button in the Actions column of the expenses table
+// Define route to handle deletion of a specific investment entry, triggered by the delete button in the Actions column of the investments table
 app.get('/delete/:id', (req, res) => {
     const id = parseInt(req.params.id);
     
@@ -145,9 +148,9 @@ app.get('/delete/:id', (req, res) => {
 
 
 
-// 5. RESET - Clear all expense entries
+// 5. RESET - Clear all investment entries
 
-// Define route to handle clearing the entire expense items, triggered by the reset button. This will clear all recorded expenses and reset the ID counter.
+// Define route to handle clearing the entire investment items, triggered by the reset button. This will clear all recorded investments and reset the ID counter.
 app.get('/reset', (req, res) => {
     portfolio = []; // Clear out the array memory completely
     nextId = 1;    // Reset the ID counter back to sequence start
