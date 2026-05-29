@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            
+            <% if (investment) { %>
+                
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark fw-bold">
+                        <h4 class="m-0">📝 Modify portfolio Entry</h4>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <form action="/edit/<%= id %>" method="POST">
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label fw-bold">Symbol</label>
+                                <input type="text" class="form-control" id="portfolio-symbol" name="symbol" value="<%= investment.Symbol %>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="amount" class="form-label fw-bold">Quantity</label>
+                                <input type="number" class="form-control" id="portfolio-quantity" name="quantity" step="100" value="<%= investment.quantity %>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="amount" class="form-label fw-bold">Unit Price ($)</label>
+                                <input type="number" class="form-control" id="portfolio-unitprice" name="unitPrice" step="0.01" value="<%= investment.unitPrice %>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="amount" class="form-label fw-bold">Commission ($)</label>
+                                <input type="number" class="form-control" id="portfolio-commission" name="commission" step="0.01" value="<%= investment.commission %>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="date" class="form-label fw-bold">Date</label>
+                                <input type="date" class="form-control" id="portfolio-date" name="date" value="<%= investment.date %>" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="portfolio-tradeType" class="form-label fw-bold">Category</label>
+                                <select class="form-select" id="portfolio-tradeType" name="tradeType" required>
+                                    <option value="Buy" <% if (investment.tradeType === 'Buy') { %>selected<% } %>>Buy</option>
+                                    <option value="Sell" <% if (investment.tradeType === 'Sell') { %>selected<% } %>>Sell</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/" class="btn btn-light px-4 me-md-2">Cancel</a>
+                                <button type="submit" class="btn btn-warning px-4 text-dark fw-bold shadow-sm">Save Changes</button>
+                            </div>
+                            
+                        </form>
+                    </div>
+                </div> <% } else { %>
+                
+                <div class="alert alert-danger text-center shadow-sm p-4">
+                    <h4 class="alert-heading fw-bold">⚠️ Data Entry Unavailable</h4>
+                    <p class="mb-3">The portfolio item you are trying to edit cannot be found.</p>
+                    <hr>
+                    <a href="/" class="btn btn-danger px-4 mt-2">Return to Dashboard</a>
+                </div>
+
+            <% } %>
+            
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

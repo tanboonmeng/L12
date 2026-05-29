@@ -9,13 +9,13 @@
                 <!-- 'name' attribute is CRITICAL. It must match req.body.description -->
                 <form action="/add" method="POST">
                     <div class="mb-3">
-                        <label for="portfolio-tradetype" class="form-label">Trade Type</label>
-                        <input type="text" id="portfolio-platform" name="platform" class="form-control" required placeholder="e.g. DBS Vickers, Interactive Brokers">
+                        <label for="portfolio-symbol" class="form-label">Symbol</label>
+                        <input type="text" id="portfolio-symbol" name="symbol" class="form-control" required placeholder="e.g. D05.SI, AAPL">
                     </div>
 
                     <div class="mb-3">
                         <label for="portfolio-quantity" class="form-label">Quantity</label>
-                        <input type="number" id="portfolio-quantity" name="quantity" step="1" class="form-control" required placeholder="0">
+                        <input type="number" id="portfolio-quantity" name="quantity" step="100" class="form-control" required placeholder="0">
                     </div>
 
                     <div class="mb-3">
@@ -25,11 +25,11 @@
 
                     <div class="mb-3">
                         <label for="portfolio-commission" class="form-label">Commission ($)</label>
-                        <input type="number" id="portfolio-commission" name="unitPrice" step="0.01" class="form-control" required placeholder="0.00">
+                        <input type="number" id="portfolio-commission" name="commission" step="0.01" class="form-control" required placeholder="0.00">
                     </div>
 
                     <div class="mb-3">
-                        <label for="portfolio-date" class="form-label">Date of Investment</label>
+                        <label for="portfolio-date" class="form-label">Date</label>
                         <input type="date" id="portfolio-date" name="date" class="form-control" required>
                     </div>
                     

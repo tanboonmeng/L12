@@ -32,6 +32,9 @@ let startingBudget = 3000.00;
 // Defined in-memory data structure to hold all expense entries
 let portfolio = [];
 
+// Track realized profit/loss from completed sells
+let realizedProfitLoss = 0;
+
 // Assign initial value for expense item ID, subsequent entries will increment this value to ensure each new entry gets a unique id
 let nextId = 1; 
 
@@ -50,14 +53,19 @@ app.get('/add', (req, res) => {
 
 // Define route for processing Add Expense Entry form submission, triggered when the user clicks the "Save Expense" button on the Add Expense form. 
 app.post('/add', (req, res) => {
+    const quantity = parseInt(req.body.quantity);
+    const unitPrice = parseFloat(req.body.unitPrice);
+    const commission = parseFloat(req.body.commission);
+    const totalCost = quantity * unitPrice + commission;
+
     const newInvestment = {
         id: nextId++, // assign unique ID and increments it up by 1
         tradeType: req.body.tradeType,
-        platform: req.body.platform,
-        quantity: parseInt(req.body.quantity),
-        unitPrice: parseFloat(req.body.unitPrice),
-        commission: parseFloat(req.body.commission),
-        totalCost: parseFloat(req.body.totalCost),
+        Symbol: req.body.symbol,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        commission: commission,
+        totalCost: totalCost,
         date: req.body.date
     };
     
@@ -67,22 +75,70 @@ app.post('/add', (req, res) => {
 
 
 
+// Define route to show the Sell form for a Buy transaction.
+app.get('/sell/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    let foundInvestment = null;
+
+    for (let i = 0; i < portfolio.length; i++) {
+        if (portfolio[i].id === id) {
+            foundInvestment = portfolio[i];
+            break;
+        }
+    }
+
+    if (!foundInvestment) {
+        return res.redirect('/');
+    }
+
+    res.render('sell', { investment: foundInvestment, id: id });
+});
+
+// Define route to process the Sell form submission.
+app.post('/sell/:id', (req, res) => {
+    const originalId = parseInt(req.params.id);
+    const originalInvestment = portfolio.find(item => item.id === originalId);
+
+    if (!originalInvestment) {
+        return res.redirect('/');
+    }
+
+    const quantity = parseInt(req.body.quantity);
+    const unitPrice = parseFloat(req.body.unitPrice);
+    const commission = parseFloat(req.body.commission);
+    const sellTotalCost = quantity * unitPrice - commission;
+
+    const buyCommissionShare = originalInvestment.quantity > 0
+        ? originalInvestment.commission * (quantity / originalInvestment.quantity)
+        : 0;
+    const buyBasis = originalInvestment.unitPrice * quantity + buyCommissionShare;
+    const realized = sellTotalCost - buyBasis;
+    realizedProfitLoss += realized;
+
+    portfolio = portfolio.filter(item => item.id !== originalId);
+    res.redirect('/');
+});
+
+
 // 2. READ - Display all investment entries and budget summary on the dashboard
 
 // Define route for Dashboard (index.ejs), triggered when the user is at the homepage (/)
 app.get('/', (req, res) => {
     let totalInvested = 0;
-    
+
     for (let i = 0; i < portfolio.length; i++) {
-        totalInvested += portfolio[i].totalCost;
+        if (portfolio[i].tradeType === 'Buy') {
+            totalInvested += portfolio[i].quantity * portfolio[i].unitPrice + portfolio[i].commission;
+        }
     }
     
-    const remaining = startingBudget - totalInvested;
+    const loss = startingBudget - totalInvested;
     
     res.render('index', {       
         portfolio: portfolio,
         totalInvested: totalInvested,
-        remaining: remaining
+        loss: loss,
+        realizedProfitLoss: realizedProfitLoss
     });
 });
 
@@ -115,11 +171,11 @@ app.post('/edit/:id', (req, res) => {
     for (let i = 0; i < portfolio.length; i++) {
         if (portfolio[i].id === id) {
             portfolio[i].tradeType = req.body.tradeType;
-            portfolio[i].platform = req.body.platform;
+            portfolio[i].Symbol = req.body.symbol;
             portfolio[i].quantity = parseInt(req.body.quantity);
             portfolio[i].unitPrice = parseFloat(req.body.unitPrice);
             portfolio[i].commission = parseFloat(req.body.commission);
-            portfolio[i].totalCost = parseFloat(req.body.totalCost);
+            portfolio[i].totalCost = portfolio[i].quantity * portfolio[i].unitPrice + portfolio[i].commission;
             portfolio[i].date = req.body.date;
             break;
         }
@@ -153,6 +209,7 @@ app.get('/delete/:id', (req, res) => {
 // Define route to handle clearing the entire investment items, triggered by the reset button. This will clear all recorded investments and reset the ID counter.
 app.get('/reset', (req, res) => {
     portfolio = []; // Clear out the array memory completely
+    realizedProfitLoss = 0;
     nextId = 1;    // Reset the ID counter back to sequence start
     res.redirect('/');
 });
